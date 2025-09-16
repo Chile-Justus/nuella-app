@@ -1,13 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import { SalesProvider } from "./context/SalesContext"; // ✅ import here
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+        <SalesProvider>
+      <App />
+    </SalesProvider>
+
   </React.StrictMode>
 );
 
