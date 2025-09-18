@@ -1,5 +1,5 @@
 // src/pages/SalesTracker.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSales } from "../context/SalesContext";
 
 export default function SalesTracker() {
@@ -23,6 +23,13 @@ export default function SalesTracker() {
     GBP: "£",
   };
 
+
+
+  // ✅ Save sales to localStorage whenever sales change
+  useEffect(() => {
+    localStorage.setItem("salesData", JSON.stringify(sales));
+  }, [sales]);
+
   // Calculate total sales
   const totalSales = sales.reduce((sum, sale) => sum + sale.amount, 0);
 
@@ -36,11 +43,14 @@ export default function SalesTracker() {
     e.preventDefault();
     if (!newSale.date || !newSale.customer || !newSale.product) return;
 
-    addSale({
+    const saleData = {
       ...newSale,
+      id: Date.now(), // ✅ unique id for delete & persistence
       quantity: parseInt(newSale.quantity),
       amount: parseFloat(newSale.amount),
-    });
+    };
+
+    addSale(saleData);
 
     setNewSale({
       date: "",

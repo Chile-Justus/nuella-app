@@ -1,14 +1,20 @@
 // src/pages/Inventory.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Inventory() {
-  const [inventory, setInventory] = useState([
-    { id: "001", category: "A4 Paper", qtyPresent: 20, qtyUsed: 5, status: "In Stock", cost: 5.0 },
-    { id: "002", category: "Printing Ink", qtyPresent: 2, qtyUsed: 1, status: "Low Stock", cost: 50.0 },
-  ]);
+  const [inventory, setInventory] = useState(() => {
+    const saved = localStorage.getItem("inventoryData");
+    return saved
+      ? JSON.parse(saved)
+      : [
+          { id: "001", name: "A4 Paper", category: "Stationery", qtyPresent: 20, qtyUsed: 5, status: "In Stock", cost: 5.0 },
+          { id: "002", name: "Printing Ink", category: "Supplies", qtyPresent: 2, qtyUsed: 1, status: "Low Stock", cost: 50.0 },
+        ];
+  });
 
   const [newItem, setNewItem] = useState({
     id: "",
+    name: "",
     category: "",
     qtyPresent: "",
     qtyUsed: "",
@@ -17,10 +23,18 @@ export default function Inventory() {
 
   const [currency, setCurrency] = useState("₦");
 
+  // ✅ Save to localStorage whenever inventory changes
+  useEffect(() => {
+    localStorage.setItem("inventoryData", JSON.stringify(inventory));
+  }, [inventory]);
+
   const formatCurrency = (value) => `${currency}${value.toFixed(2)}`;
 
   // Calculate total expenses
-  const totalExpenses = inventory.reduce((sum, item) => sum + item.cost * item.qtyPresent, 0);
+  const totalExpenses = inventory.reduce(
+    (sum, item) => sum + item.cost * item.qtyPresent,
+    0
+  );
 
   // Handle input changes
   const handleChange = (e) => {
@@ -30,7 +44,7 @@ export default function Inventory() {
   // Add new item
   const addItem = (e) => {
     e.preventDefault();
-    if (!newItem.id || !newItem.category) return;
+    if (!newItem.id || !newItem.name || !newItem.category) return;
 
     const status = newItem.qtyPresent <= 2 ? "Low Stock" : "In Stock";
     setInventory([
@@ -44,7 +58,14 @@ export default function Inventory() {
       },
     ]);
 
-    setNewItem({ id: "", category: "", qtyPresent: "", qtyUsed: "", cost: "" });
+    setNewItem({
+      id: "",
+      name: "",
+      category: "",
+      qtyPresent: "",
+      qtyUsed: "",
+      cost: "",
+    });
   };
 
   // Delete item
@@ -77,7 +98,8 @@ export default function Inventory() {
           <table className="w-full border-collapse text-sm sm:text-base">
             <thead>
               <tr className="bg-purple-50 text-purple-800">
-                <th className="py-3 px-4 text-left">Item</th>
+                <th className="py-3 px-4 text-left">Item Code</th>
+                <th className="py-3 px-4 text-left">Item Name</th>
                 <th className="py-3 px-4 text-left">Category</th>
                 <th className="py-3 px-4 text-left">Qty Present</th>
                 <th className="py-3 px-4 text-left">Qty Used</th>
@@ -90,6 +112,7 @@ export default function Inventory() {
               {inventory.map((item) => (
                 <tr key={item.id} className="border-t">
                   <td className="py-3 px-4">{item.id}</td>
+                  <td className="py-3 px-4">{item.name}</td>
                   <td className="py-3 px-4">{item.category}</td>
                   <td className="py-3 px-4">{item.qtyPresent}</td>
                   <td className="py-3 px-4">{item.qtyUsed}</td>
@@ -133,12 +156,23 @@ export default function Inventory() {
         <h2 className="text-lg font-playfair text-purple-900 mb-4">
           Add New Item
         </h2>
-        <form onSubmit={addItem} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form
+          onSubmit={addItem}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+        >
           <input
             type="text"
             name="id"
-            placeholder="Item ID"
+            placeholder="Item Code"
             value={newItem.id}
+            onChange={handleChange}
+            className="p-2 border rounded-lg"
+          />
+          <input
+            type="text"
+            name="name"
+            placeholder="Item Name"
+            value={newItem.name}
             onChange={handleChange}
             className="p-2 border rounded-lg"
           />
